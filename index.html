@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vereinskleidung Bestellung</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+label {
+    display: block;
+    margin-top: 10px;
+}
+input, select {
+    padding: 5px;
+    margin-top: 5px;
+}
+.paypal-button-container {
+    margin-top: 20px;
+}
+</style>
+</head>
+<body>
+<h1>Bestellung Vereinskleidung</h1>
+<form id="orderForm">
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text" required />
+
+    <label for="email">E-Mail</label>
+    <input id="email" name="email" type="email" required />
+
+    <label for="item">Artikel</label>
+    <select id="item" name="item">
+        <option value="trikot">Trikot - 30€</option>
+        <option value="hose">Hose - 20€</option>
+        <option value="jacke">Jacke - 50€</option>
+    </select>
+
+    <label><input type="checkbox" id="privacy" required /> Ich akzeptiere die <a href="#" target="_blank">Datenschutzerklärung</a>.</label>
+</form>
+<div class="paypal-button-container" id="paypal-button-container"></div>
+
+<script src="https://www.paypal.com/sdk/js?client-id=sb&currency=EUR"></script>
+<script>
+    function getPrice(item) {
+        switch(item) {
+            case 'trikot':
+                return 30;
+            case 'hose':
+                return 20;
+            case 'jacke':
+                return 50;
+            default:
+                return 0;
+        }
+    }
+
+    paypal.Buttons({
+        onClick: function() {
+            var form = document.getElementById('orderForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return false;
+            }
+            return true;
+        },
+        createOrder: function(data, actions) {
+            var item = document.getElementById('item').value;
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: getPrice(item).toString()
+                    }
+                }]
+            });
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                alert('Danke für Ihre Bestellung, ' + details.payer.name.given_name + '!');
+                // Hier könnten Sie die Bestelldaten an den Server senden
+            });
+        }
+    }).render('#paypal-button-container');
+</script>
+
+<p style="font-size: small; margin-top: 20px;">
+    Wir speichern Ihre Daten nur zur Bearbeitung Ihrer Bestellung gemäß unserer Datenschutzerklärung und geben sie nicht an Dritte weiter.
+</p>
+</body>
+</html>
